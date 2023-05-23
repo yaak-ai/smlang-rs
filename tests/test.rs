@@ -76,7 +76,6 @@ fn multiple_lifetimes() {
     struct WrappedEvents<'a, 'b, 'c>(Events<'a, 'b, 'c>);
 }
 
-
 #[test]
 fn async_guards_and_actions() {
     use async_trait::async_trait;
@@ -111,4 +110,28 @@ fn async_guards_and_actions() {
         sm.process_event(Events::Event1).await.unwrap();
         assert!(matches!(sm.state(), Ok(&States::Fault)));
     });
+}
+
+#[test]
+fn impl_display_events_states() {
+    statemachine! {
+        impl_display_events: true,
+        impl_display_states: true,
+        transitions: {
+            *Init + Event = End,
+        }
+    }
+
+    struct Context;
+    impl StateMachineContext for Context {}
+
+    let mut sm = StateMachine::new(Context);
+    assert_eq!(format!("{}", sm.state().unwrap()), "Init");
+
+    let event = Events::Event;
+    assert_eq!(format!("{}", event), "Event");
+
+    sm.process_event(event).unwrap();
+    assert!(matches!(sm.state(), Ok(&States::End)));
+    assert_eq!(format!("{}", sm.state().unwrap()), "End");
 }
