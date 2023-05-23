@@ -5,6 +5,7 @@ use syn::{braced, parse, spanned::Spanned, token, Ident, Token, Type};
 pub struct StateMachine {
     pub temporary_context_type: Option<Type>,
     pub custom_guard_error: bool,
+    pub is_async: bool,
     pub transitions: Vec<StateTransition>,
 }
 
@@ -13,6 +14,7 @@ impl StateMachine {
         StateMachine {
             temporary_context_type: None,
             custom_guard_error: false,
+            is_async: false,
             transitions: Vec::new(),
         }
     }
@@ -73,6 +75,13 @@ impl parse::Parse for StateMachine {
                         statemachine.custom_guard_error = true
                     }
 
+                }
+                "is_async" => {
+                    input.parse::<Token![:]>()?;
+                    let is_async: syn::LitBool = input.parse()?;
+                    if is_async.value {
+                        statemachine.is_async = true
+                    }
                 }
                 "temporary_context" => {
                     input.parse::<Token![:]>()?;
